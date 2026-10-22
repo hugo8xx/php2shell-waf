@@ -5,6 +5,14 @@ x-base: &base
   image: php2shell-test-apache:8.3.35
 
 services:
+  # BEFORE: no protection at all (stock php:8.3.35-apache, ModSecurity
+  # module loaded but no config = engine off)
+  none:
+    <<: *base
+    ports: ["18100:80"]
+    volumes:
+      - ../local-vps/app:/var/www/html:ro
+
   # Layer A: Apache config only (mod_rewrite + php_admin_flag)
   rewrite:
     <<: *base
