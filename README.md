@@ -32,9 +32,10 @@ Virtual patch / WAF rules สำหรับช่องโหว่ **PHP2Shell
 
 1. block `multipart/form-data` ที่ไม่ได้ส่งไป path สำหรับ upload — **ต้องแก้ allowlist ให้ตรงกับแอปคุณ**
 2. block multipart ที่ไม่มี `Content-Length` หรือเป็น `Transfer-Encoding: chunked`
-3. block ชื่อ `PHP_SESSION_UPLOAD_PROGRESS` ใน query / cookie (และ body ถ้า platform รองรับ)
-4. จำกัดขนาด body (ค่า default 10 MB)
-5. (ถ้า platform รองรับ) จำกัดความลึก `a[b][c]...`, จำนวน part/ไฟล์/ตัวแปร, ตรวจ `PHPSESSID` ขาออกที่ยาวผิดปกติ
+3. block Content-Type multipart ที่ไม่ใช่รูปแบบมาตรฐาน เช่น `multipart/form-data,boundary=x` — PHP ยังมองเป็น multipart แต่ WAF มักแยก body ไม่ได้
+4. block ชื่อ `PHP_SESSION_UPLOAD_PROGRESS` ใน query / cookie (และ body ถ้า platform รองรับ)
+5. จำกัดขนาด body (ค่า default 10 MB)
+6. (ถ้า platform รองรับ) จำกัดความลึก `a[b][c]...`, จำนวน part/ไฟล์/ตัวแปร, ตรวจ `PHPSESSID` ขาออกที่ยาวผิดปกติ
 
 ## ขั้นตอนแนะนำ
 

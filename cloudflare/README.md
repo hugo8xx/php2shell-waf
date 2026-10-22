@@ -4,11 +4,14 @@
 |---|---|
 | multipart ไปยัง path ที่ไม่ใช่ upload | Free |
 | multipart ไม่มี Content-Length / chunked | Free |
+| Content-Type multipart ที่ไม่ใช่รูปแบบมาตรฐาน เช่น `multipart/form-data,boundary=x` | Free |
 | `PHP_SESSION_UPLOAD_PROGRESS` ใน query / cookie | Free |
 | body ≥ 10 MB (ใช้ `matches` regex) | Business |
 | ชื่อ field upload progress / nesting ใน body (`http.request.body.raw`) | Enterprise |
 
-Free plan มี custom rule ได้ 5 ข้อ — ชุดนี้ใช้ 3 ข้อ
+Free plan มี custom rule ได้ 5 ข้อ — ชุดนี้ใช้ 4 ข้อ
+
+rule Content-Type แบบเข้มอนุญาตเฉพาะ `multipart/form-data;...boundary=...` (ไม่มีช่องว่างก่อน `;`) เพราะ Free plan ใช้ regex ไม่ได้
 
 ## ติดตั้ง
 

@@ -149,5 +149,36 @@
         ]
       }
     }
+  },
+  {
+    "Name": "php2shell-odd-multipart-content-type",
+    "Priority": 5,
+    "Action": { "Block": {} },
+    "VisibilityConfig": { "SampledRequestsEnabled": true, "CloudWatchMetricsEnabled": true, "MetricName": "php2shell-odd-multipart-content-type" },
+    "Statement": {
+      "AndStatement": {
+        "Statements": [
+          {
+            "ByteMatchStatement": {
+              "SearchString": "multipart",
+              "FieldToMatch": { "SingleHeader": { "Name": "content-type" } },
+              "TextTransformations": [{ "Priority": 0, "Type": "LOWERCASE" }],
+              "PositionalConstraint": "CONTAINS"
+            }
+          },
+          {
+            "NotStatement": {
+              "Statement": {
+                "RegexMatchStatement": {
+                  "RegexString": "^multipart/form-data *; *boundary=",
+                  "FieldToMatch": { "SingleHeader": { "Name": "content-type" } },
+                  "TextTransformations": [{ "Priority": 0, "Type": "LOWERCASE" }]
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
   }
 ]

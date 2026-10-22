@@ -15,6 +15,13 @@
   },
   {
     "min_plan": "free",
+    "description": "PHP2Shell: non-standard multipart Content-Type, e.g. comma variant (CVE-2026-109618/109619)",
+    "expression": "(any(lower(http.request.headers[\"content-type\"][*])[*] contains \"multipart\") and (len(http.request.headers[\"content-type\"]) > 1 or not starts_with(lower(http.request.headers[\"content-type\"][0]), \"multipart/form-data;\") or not lower(http.request.headers[\"content-type\"][0]) contains \"boundary=\"))",
+    "action": "block",
+    "enabled": true
+  },
+  {
+    "min_plan": "free",
     "description": "PHP2Shell: session upload progress name in query/cookie (CVE-2026-109619)",
     "expression": "(lower(http.request.uri.query) contains \"php_session_upload_progress\" or lower(http.cookie) contains \"php_session_upload_progress\")",
     "action": "block",

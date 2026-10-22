@@ -39,3 +39,8 @@ add $((BASE + 2)) "PHP2Shell: session upload progress name in query/cookie (CVE-
 
 add $((BASE + 3)) "PHP2Shell: declared body >= 10 MB (CVE-2026-109618)" \
   "has(request.headers['content-length']) && request.headers['content-length'].matches('^[0-9]{8,}$')"
+
+# PHP treats e.g. "multipart/form-data,boundary=x" as multipart; WAF
+# body parsers usually don't. Allow only the standard form.
+add $((BASE + 4)) "PHP2Shell: non-standard multipart Content-Type (CVE-2026-109618/109619)" \
+  "has(request.headers['content-type']) && request.headers['content-type'].lower().contains('multipart') && !request.headers['content-type'].lower().matches('^multipart/form-data *; *boundary=')"

@@ -1,6 +1,6 @@
 # AWS WAFv2
 
-Rule group 5 ข้อ ([`rules.json`](rules.json)): multipart นอก upload path, multipart ไม่มี length / chunked, upload progress (body + query + cookie), body ≥ 10 MB, nesting ลึก
+Rule group 6 ข้อ ([`rules.json`](rules.json)): multipart นอก upload path, multipart ไม่มี length / chunked, upload progress (body + query + cookie), body ≥ 10 MB, nesting ลึก, Content-Type multipart ที่ไม่ใช่รูปแบบมาตรฐาน (เช่น `multipart/form-data,boundary=x` ที่ PHP ยังมองเป็น multipart)
 
 ## ติดตั้ง
 
