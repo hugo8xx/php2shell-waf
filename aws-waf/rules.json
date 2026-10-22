@@ -1,0 +1,153 @@
+[
+  {
+    "Name": "php2shell-multipart-non-upload-path",
+    "Priority": 0,
+    "Action": { "Block": {} },
+    "VisibilityConfig": { "SampledRequestsEnabled": true, "CloudWatchMetricsEnabled": true, "MetricName": "php2shell-multipart-non-upload-path" },
+    "Statement": {
+      "AndStatement": {
+        "Statements": [
+          {
+            "ByteMatchStatement": {
+              "SearchString": "multipart/",
+              "FieldToMatch": { "SingleHeader": { "Name": "content-type" } },
+              "TextTransformations": [{ "Priority": 0, "Type": "LOWERCASE" }],
+              "PositionalConstraint": "CONTAINS"
+            }
+          },
+          {
+            "NotStatement": {
+              "Statement": {
+                "RegexMatchStatement": {
+                  "RegexString": "^/(upload|wp-admin/async-upload\\.php|wp-admin/media-new\\.php)",
+                  "FieldToMatch": { "UriPath": {} },
+                  "TextTransformations": [{ "Priority": 0, "Type": "NONE" }]
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "Name": "php2shell-multipart-no-length-or-chunked",
+    "Priority": 1,
+    "Action": { "Block": {} },
+    "VisibilityConfig": { "SampledRequestsEnabled": true, "CloudWatchMetricsEnabled": true, "MetricName": "php2shell-multipart-no-length-or-chunked" },
+    "Statement": {
+      "AndStatement": {
+        "Statements": [
+          {
+            "ByteMatchStatement": {
+              "SearchString": "multipart/",
+              "FieldToMatch": { "SingleHeader": { "Name": "content-type" } },
+              "TextTransformations": [{ "Priority": 0, "Type": "LOWERCASE" }],
+              "PositionalConstraint": "CONTAINS"
+            }
+          },
+          {
+            "OrStatement": {
+              "Statements": [
+                {
+                  "ByteMatchStatement": {
+                    "SearchString": "chunked",
+                    "FieldToMatch": { "SingleHeader": { "Name": "transfer-encoding" } },
+                    "TextTransformations": [{ "Priority": 0, "Type": "LOWERCASE" }],
+                    "PositionalConstraint": "CONTAINS"
+                  }
+                },
+                {
+                  "NotStatement": {
+                    "Statement": {
+                      "RegexMatchStatement": {
+                        "RegexString": "^[0-9]+$",
+                        "FieldToMatch": { "SingleHeader": { "Name": "content-length" } },
+                        "TextTransformations": [{ "Priority": 0, "Type": "NONE" }]
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "Name": "php2shell-upload-progress-field",
+    "Priority": 2,
+    "Action": { "Block": {} },
+    "VisibilityConfig": { "SampledRequestsEnabled": true, "CloudWatchMetricsEnabled": true, "MetricName": "php2shell-upload-progress-field" },
+    "Statement": {
+      "OrStatement": {
+        "Statements": [
+          {
+            "ByteMatchStatement": {
+              "SearchString": "php_session_upload_progress",
+              "FieldToMatch": { "Body": { "OversizeHandling": "CONTINUE" } },
+              "TextTransformations": [{ "Priority": 0, "Type": "LOWERCASE" }],
+              "PositionalConstraint": "CONTAINS"
+            }
+          },
+          {
+            "ByteMatchStatement": {
+              "SearchString": "php_session_upload_progress",
+              "FieldToMatch": { "QueryString": {} },
+              "TextTransformations": [{ "Priority": 0, "Type": "URL_DECODE" }, { "Priority": 1, "Type": "LOWERCASE" }],
+              "PositionalConstraint": "CONTAINS"
+            }
+          },
+          {
+            "ByteMatchStatement": {
+              "SearchString": "php_session_upload_progress",
+              "FieldToMatch": { "SingleHeader": { "Name": "cookie" } },
+              "TextTransformations": [{ "Priority": 0, "Type": "LOWERCASE" }],
+              "PositionalConstraint": "CONTAINS"
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "Name": "php2shell-large-body",
+    "Priority": 3,
+    "Action": { "Block": {} },
+    "VisibilityConfig": { "SampledRequestsEnabled": true, "CloudWatchMetricsEnabled": true, "MetricName": "php2shell-large-body" },
+    "Statement": {
+      "RegexMatchStatement": {
+        "RegexString": "^[0-9]{8,}$",
+        "FieldToMatch": { "SingleHeader": { "Name": "content-length" } },
+        "TextTransformations": [{ "Priority": 0, "Type": "NONE" }]
+      }
+    }
+  },
+  {
+    "Name": "php2shell-deep-nesting",
+    "Priority": 4,
+    "Action": { "Block": {} },
+    "VisibilityConfig": { "SampledRequestsEnabled": true, "CloudWatchMetricsEnabled": true, "MetricName": "php2shell-deep-nesting" },
+    "Statement": {
+      "OrStatement": {
+        "Statements": [
+          {
+            "RegexMatchStatement": {
+              "RegexString": "(\\[[^\\]]*\\]){6,}",
+              "FieldToMatch": { "Body": { "OversizeHandling": "CONTINUE" } },
+              "TextTransformations": [{ "Priority": 0, "Type": "URL_DECODE" }]
+            }
+          },
+          {
+            "RegexMatchStatement": {
+              "RegexString": "(\\[[^\\]]*\\]){6,}",
+              "FieldToMatch": { "QueryString": {} },
+              "TextTransformations": [{ "Priority": 0, "Type": "URL_DECODE" }]
+            }
+          }
+        ]
+      }
+    }
+  }
+]

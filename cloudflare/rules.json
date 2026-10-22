@@ -1,0 +1,37 @@
+[
+  {
+    "min_plan": "free",
+    "description": "PHP2Shell: multipart to non-upload path (CVE-2026-109618/109619)",
+    "expression": "(any(lower(http.request.headers[\"content-type\"][*])[*] contains \"multipart/\") and not starts_with(http.request.uri.path, \"/upload\") and not starts_with(http.request.uri.path, \"/wp-admin/async-upload.php\") and not starts_with(http.request.uri.path, \"/wp-admin/media-new.php\"))",
+    "action": "block",
+    "enabled": true
+  },
+  {
+    "min_plan": "free",
+    "description": "PHP2Shell: multipart without Content-Length or chunked (CVE-2026-109618)",
+    "expression": "(any(lower(http.request.headers[\"content-type\"][*])[*] contains \"multipart/\") and (not has_key(http.request.headers, \"content-length\") or any(lower(http.request.headers[\"transfer-encoding\"][*])[*] contains \"chunked\")))",
+    "action": "block",
+    "enabled": true
+  },
+  {
+    "min_plan": "free",
+    "description": "PHP2Shell: session upload progress name in query/cookie (CVE-2026-109619)",
+    "expression": "(lower(http.request.uri.query) contains \"php_session_upload_progress\" or lower(http.cookie) contains \"php_session_upload_progress\")",
+    "action": "block",
+    "enabled": true
+  },
+  {
+    "min_plan": "business",
+    "description": "PHP2Shell: declared body >= 10 MB (CVE-2026-109618)",
+    "expression": "(any(http.request.headers[\"content-length\"][*] matches \"^[0-9]{8,}$\"))",
+    "action": "block",
+    "enabled": true
+  },
+  {
+    "min_plan": "enterprise",
+    "description": "PHP2Shell: upload progress field / deep nesting in body (CVE-2026-109619)",
+    "expression": "(lower(http.request.body.raw) contains \"php_session_upload_progress\" or http.request.body.raw matches \"(\\\\[[^\\\\]]*\\\\]){6,}\" or url_decode(http.request.body.raw) matches \"(\\\\[[^\\\\]]*\\\\]){6,}\")",
+    "action": "block",
+    "enabled": true
+  }
+]

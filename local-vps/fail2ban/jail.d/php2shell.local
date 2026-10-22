@@ -1,0 +1,9 @@
+[php2shell]
+enabled  = true
+port     = http,https
+filter   = php2shell
+logpath  = /var/log/nginx/error.log
+# Exploits need repeated OOMs on the same worker — a few is suspicious.
+maxretry = 3
+findtime = 10m
+bantime  = 24h
