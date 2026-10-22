@@ -8,7 +8,8 @@
 | `php/php2shell-pool.conf` | FPM pool: recycle worker (`pm.max_requests`) + บังคับค่า ini ด้วย `php_admin_value` |
 | `nginx/conf.d/php2shell-maps.conf` | `map` ทั้งหมด (ใส่ใน `http{}`) |
 | `nginx/snippets/php2shell-server.conf` | `include` ใน `server{}` ที่ส่งไป PHP |
-| `modsecurity/php2shell.conf` | ถ้ามี ModSecurity (v2.9.6+ / v3.0.8+) — ตรวจ body ได้ละเอียดกว่า nginx เปล่า |
+| `modsecurity/php2shell.conf` | ถ้ามี ModSecurity (v2.9.6+ / v3.0.8+) — ตรวจ body ได้ละเอียดกว่า nginx เปล่า ทดสอบแล้วทั้ง v2.9.11 (Apache) และ v3.0.17 (nginx) |
+| `apache/php2shell.conf` | Apache 2.4 + mod_php: mod_rewrite rules + `LimitRequestBody` + `php_admin_flag session.upload_progress.enabled off` (`Include` ใน `<VirtualHost>`) |
 | `fail2ban/` | แบน IP ที่ทำให้ PHP OOM / timeout ซ้ำ ๆ (อ่านจาก nginx error log) |
 
 ## ติดตั้ง
@@ -47,6 +48,12 @@ sudo php-fpm8.X -i | grep -E 'upload_progress.enabled|max_input_nesting|post_max
 
 รัน nginx + PHP-FPM + ModSecurity (CRS 4) จริง แล้วตรวจ: ค่า ini ใน FPM, rule ทุกข้อ, upload ปกติยังถึง PHP, OOM → fail2ban, log `PHPSESSID` ขาออก
 
+```bash
+./tests/apache/run.sh
+```
+
+รัน Apache + mod_php **8.3.35 (ยังมีช่องโหว่)** หลัง 4 ชั้นป้องกัน (mod_rewrite, ModSecurity v2 แบบ Reject / ProcessPartial / NoFilesLimit 13 MB) แล้วยิง request ที่เลียนแบบรูปแบบ PoC สาธารณะ (ฟิลด์ ~1000 ตัว + `PHP_SESSION_UPLOAD_PROGRESS` + ไฟล์ — ไม่มี payload exploit)
+
 ## fail2ban ต้องการอะไร
 
 filter อ่านบรรทัด `FastCGI sent in stderr ... client: <IP>` จาก nginx error log ซึ่งจะมีก็ต่อเมื่อ:
@@ -61,5 +68,7 @@ filter อ่านบรรทัด `FastCGI sent in stderr ... client: <IP>` 
 
 - **nginx เปล่าอ่านชื่อ field ใน body ไม่ได้** → ต้องพึ่ง `session.upload_progress.enabled=0` ใน php.ini หรือใช้ ModSecurity
 - nginx **block response ไม่ได้** → การตรวจ `PHPSESSID` ยาวผิดปกติเป็นแค่ log ที่ `/var/log/nginx/php2shell.log`
-- **Apache mod_php** คือเป้าที่ยืนยันแล้วว่าโจมตีได้ → ถ้าใช้อยู่ แนะนำย้ายไป PHP-FPM (`mod_proxy_fcgi`) และใช้ ModSecurity rule
+- **Apache mod_php** คือเป้าที่ยืนยันแล้วว่าโจมตีได้ → ถ้าใช้อยู่ ใส่ `apache/php2shell.conf` + ModSecurity rule และพิจารณาย้ายไป PHP-FPM (`mod_proxy_fcgi`)
+- mod_rewrite อ่าน body ไม่ได้ → บน path upload ต้องพึ่ง `php_admin_flag` ในไฟล์เดียวกัน หรือ ModSecurity
+- ModSecurity: **อย่าลบ rule 9261815 (`REQBODY_ERROR`)** — ModSecurity 2.9 หยุด parse body เมื่อเกิน 1000 argument (`SecArgumentsLimit`) ซึ่งรูปแบบ PoC เกินอยู่แล้ว rule นี้เป็นชั้นสำรองของ rule ตรวจชื่อ field
 - ตรวจว่าไม่มี `fastcgi_param PHP_VALUE` / `PHP_ADMIN_VALUE` ที่รับค่าจาก request: `grep -rn 'PHP_VALUE\|PHP_ADMIN_VALUE' /etc/nginx`

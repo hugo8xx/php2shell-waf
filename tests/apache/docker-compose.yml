@@ -1,0 +1,42 @@
+# Apache mod_php 8.3.35 (vulnerable) behind each defensive layer,
+# tested one layer at a time. Usage: ./tests/apache/run.sh
+x-base: &base
+  build: .
+  image: php2shell-test-apache:8.3.35
+
+services:
+  # Layer A: Apache config only (mod_rewrite + php_admin_flag)
+  rewrite:
+    <<: *base
+    ports: ["18101:80"]
+    volumes:
+      - ../local-vps/app:/var/www/html:ro
+      - ../../local-vps/apache/php2shell.conf:/etc/apache2/php2shell.conf:ro
+      - ./vhost-rewrite.conf:/etc/apache2/sites-enabled/000-default.conf:ro
+
+  # Layer B: ModSecurity v2 with our rules only, SecRequestBodyLimitAction Reject
+  msc-reject:
+    <<: *base
+    ports: ["18102:80"]
+    volumes:
+      - ../local-vps/app:/var/www/html:ro
+      - ./modsec-base-reject.conf:/etc/modsecurity/00-base.conf:ro
+      - ../../local-vps/modsecurity/php2shell.conf:/etc/modsecurity/10-php2shell.conf:ro
+
+  # Layer C: same rules, SecRequestBodyLimitAction ProcessPartial
+  msc-partial:
+    <<: *base
+    ports: ["18103:80"]
+    volumes:
+      - ../local-vps/app:/var/www/html:ro
+      - ./modsec-base-partial.conf:/etc/modsecurity/00-base.conf:ro
+      - ../../local-vps/modsecurity/php2shell.conf:/etc/modsecurity/10-php2shell.conf:ro
+
+  # Layer D: same rules, NoFilesLimit raised to 13 MB (big-form tuning)
+  msc-bignofiles:
+    <<: *base
+    ports: ["18104:80"]
+    volumes:
+      - ../local-vps/app:/var/www/html:ro
+      - ./modsec-base-bignofiles.conf:/etc/modsecurity/00-base.conf:ro
+      - ../../local-vps/modsecurity/php2shell.conf:/etc/modsecurity/10-php2shell.conf:ro

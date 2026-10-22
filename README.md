@@ -22,7 +22,7 @@ Virtual patch / WAF rules สำหรับช่องโหว่ **PHP2Shell
 
 | โฟลเดอร์ | ใช้กับ | ตรวจ body ได้ |
 |---|---|---|
-| [`local-vps/`](local-vps/) | VPS ที่ setup เอง: nginx, ModSecurity, php.ini, PHP-FPM, fail2ban | ✅ (ModSecurity) / ❌ (nginx เปล่า) |
+| [`local-vps/`](local-vps/) | VPS ที่ setup เอง: nginx, Apache, ModSecurity, php.ini, PHP-FPM, fail2ban | ✅ (ModSecurity) / ❌ (nginx เปล่า) |
 | [`cloudflare/`](cloudflare/) | Cloudflare WAF custom rules | Enterprise เท่านั้น |
 | [`aws-waf/`](aws-waf/) | AWS WAFv2 (ALB, API Gateway, CloudFront) | ✅ (8–64 KB แรก) |
 | [`gcp-cloud-armor/`](gcp-cloud-armor/) | Google Cloud Armor | ❌ |
