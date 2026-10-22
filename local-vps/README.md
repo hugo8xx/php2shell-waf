@@ -39,7 +39,25 @@ sudo systemctl reload fail2ban
 sudo php-fpm8.X -i | grep -E 'upload_progress.enabled|max_input_nesting|post_max_size'
 ```
 
+## ทดสอบใน Docker ก่อนขึ้นเครื่องจริง
+
+```bash
+./tests/local-vps/run.sh
+```
+
+รัน nginx + PHP-FPM + ModSecurity (CRS 4) จริง แล้วตรวจ: ค่า ini ใน FPM, rule ทุกข้อ, upload ปกติยังถึง PHP, OOM → fail2ban, log `PHPSESSID` ขาออก
+
+## fail2ban ต้องการอะไร
+
+filter อ่านบรรทัด `FastCGI sent in stderr ... client: <IP>` จาก nginx error log ซึ่งจะมีก็ต่อเมื่อ:
+
+- `fastcgi.logging = On` (ค่า default ของ Debian/Ubuntu — **แต่ Docker image `php:*-fpm` ตั้งเป็น Off**)
+- **ไม่ได้**ตั้ง `error_log` ของ PHP ไปที่ไฟล์ (ถ้าตั้ง error จะไปลงไฟล์นั้นแทน ซึ่งไม่มี IP ของ client)
+
 ## ข้อจำกัด
+
+- `Content-Type` แปลก ๆ เช่น `multipart/form-data,boundary=x` PHP ยังมองเป็น multipart แต่ WAF หลายตัวแยก body ไม่ได้ → ทั้ง nginx และ ModSecurity rule ชุดนี้ block ไว้แล้ว
+- rule ตรวจ `PHPSESSID` ขาออกของ ModSecurity block ถ้า session id ยาวเกิน 128 ตัว — ถ้าตั้ง `session.sid_length` สูงกว่านั้นให้ปรับ rule 9261840
 
 - **nginx เปล่าอ่านชื่อ field ใน body ไม่ได้** → ต้องพึ่ง `session.upload_progress.enabled=0` ใน php.ini หรือใช้ ModSecurity
 - nginx **block response ไม่ได้** → การตรวจ `PHPSESSID` ยาวผิดปกติเป็นแค่ log ที่ `/var/log/nginx/php2shell.log`

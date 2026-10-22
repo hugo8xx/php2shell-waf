@@ -1,0 +1,20 @@
+# End-to-end test of local-vps/ with a real nginx + PHP-FPM.
+# Usage: ./tests/local-vps/run.sh   (PHP_VERSION=8.4 to try another)
+services:
+  php:
+    image: php:${PHP_VERSION:-8.3}-fpm
+    volumes:
+      - ./app:/var/www/html:ro
+      - ../../local-vps/php/99-php2shell.ini:/usr/local/etc/php/conf.d/99-php2shell.ini:ro
+      - ../../local-vps/php/php2shell-pool.conf:/usr/local/etc/php-fpm.d/zzz-php2shell.conf:ro
+      - ./php-test.ini:/usr/local/etc/php/conf.d/zz-test.ini:ro
+
+  nginx:
+    image: nginx:stable
+    depends_on: [php]
+    ports: ["${PORT:-18090}:80"]
+    volumes:
+      - ./app:/var/www/html:ro
+      - ../../local-vps/nginx/conf.d/php2shell-maps.conf:/etc/nginx/conf.d/00-php2shell-maps.conf:ro
+      - ../../local-vps/nginx/snippets:/etc/nginx/snippets:ro
+      - ./site.conf:/etc/nginx/conf.d/default.conf:ro
